@@ -1,0 +1,8 @@
+note load a dna sample and create reports
+load dna text ATGCGTATGACCTGA as sample_dna
+count gc of sample_dna
+count bases of sample_dna
+translate sample_dna as sample_protein
+make report for sample_dna as sample_report
+write report of sample_report to file sample_report.txt
+list integrations
