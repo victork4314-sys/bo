@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bio Speak Studio — Web</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="toolbar">
+        <div class="brand">Bio Speak Studio</div>
+        <div class="toolbar-buttons">
+          <button type="button" @click="resetWorkspace">Reset</button>
+          <button type="button" @click="triggerFileDialog">Load</button>
+          <button type="button" @click="analyzeSelected">Analyze</button>
+          <button type="button" @click="translateSelected">Translate</button>
+          <button type="button" @click="alignSelected">Align</button>
+          <button type="button" @click="exportWorkspace">Export</button>
+          <input ref="fileInput" class="hidden" type="file" multiple @change="handleFileInput" />
+        </div>
+      </header>
+      <main class="content">
+        <aside class="side-panel">
+          <div class="panel-header">Sequences</div>
+          <div class="sequence-list" @dragover.prevent @drop.prevent="handleDrop">
+            <p v-if="state.sequences.length === 0" class="empty">Drop FASTA, FASTQ, or tables here.</p>
+            <label v-for="item in state.sequences" :key="item.name" class="sequence-item">
+              <input type="checkbox" :value="item.name" v-model="state.selectedSequences" />
+              <div class="sequence-info">
+                <div class="sequence-name">{{ item.name }}</div>
+                <div class="sequence-meta">{{ item.alphabet.toUpperCase() }} · {{ item.length }} bp</div>
+              </div>
+            </label>
+          </div>
+          <div class="panel-header">Alignments</div>
+          <div class="alignment-list">
+            <div v-if="state.alignments.length === 0" class="empty">No alignments yet.</div>
+            <div v-for="align in state.alignments" :key="align.name" class="alignment-item" @click="showAlignment(align)">
+              <div class="alignment-name">{{ align.name }}</div>
+              <div class="alignment-meta">{{ align.method }} · score {{ align.score.toFixed(2) }}</div>
+            </div>
+          </div>
+        </aside>
+        <section class="workspace">
+          <div class="workspace-scroll">
+            <div class="card" v-if="state.preview">
+              <h2>{{ state.preview.title }}</h2>
+              <pre class="preview-text">{{ state.preview.content }}</pre>
+            </div>
+            <div class="card">
+              <h2>Activity</h2>
+              <ul class="log">
+                <li v-for="entry in state.log" :key="entry.timestamp">
+                  <span class="log-time">{{ entry.time }}</span>
+                  <span :class="['log-status', entry.status]">{{ entry.status.toUpperCase() }}</span>
+                  <span class="log-text">{{ entry.message }}</span>
+                </li>
+              </ul>
+            </div>
+            <div class="card" v-if="state.charts.gc">
+              <h2>GC Content</h2>
+              <div id="gc-chart" class="chart"></div>
+            </div>
+            <div class="card" v-if="state.charts.lengths">
+              <h2>Length Distribution</h2>
+              <div id="length-chart" class="chart"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="pyodide/pyodide.js"></script>
+    <script src="vendor/vue.global.prod.js"></script>
+    <script src="vendor/plotly.min.js"></script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

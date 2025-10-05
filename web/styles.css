@@ -1,0 +1,264 @@
+:root {
+  color-scheme: light;
+  font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  background-color: #f5f6f8;
+  color: #111827;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #fdfdfd 0%, #eef1f6 100%);
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.1);
+}
+
+.brand {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.toolbar button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f7f7f7 0%, #e4e7eb 100%);
+  color: #1f2937;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.toolbar button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18);
+}
+
+.toolbar button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.side-panel {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.9);
+  border-right: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 1rem 1.25rem 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.sequence-list,
+.alignment-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.25rem 1rem;
+}
+
+.sequence-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.sequence-item:hover {
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+.sequence-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sequence-name {
+  font-weight: 600;
+}
+
+.sequence-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.alignment-item {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.6rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.alignment-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+}
+
+.alignment-name {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.alignment-meta {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.workspace {
+  flex: 1;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.workspace-scroll {
+  max-width: 1100px;
+  margin: 0 auto;
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 3rem;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 28px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.log li {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border-radius: 18px;
+  background: rgba(243, 244, 246, 0.85);
+}
+
+.log-time {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.log-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.log-status.ok {
+  color: #16a34a;
+}
+
+.log-status.info {
+  color: #2563eb;
+}
+
+.log-status.error {
+  color: #dc2626;
+}
+
+.log-text {
+  font-size: 0.9rem;
+}
+
+.preview-text {
+  margin: 0;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 20px;
+  padding: 1rem;
+  font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.chart {
+  width: 100%;
+  min-height: 280px;
+}
+
+@media (max-width: 1024px) {
+  .content {
+    flex-direction: column;
+  }
+
+  .side-panel {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .sequence-list,
+  .alignment-list {
+    flex: 1;
+    max-height: 260px;
+  }
+}

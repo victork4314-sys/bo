@@ -6,6 +6,7 @@ from .integration import IntegrationRegistry
 from .selftest import run_self_tests
 from .workspace import Workspace
 from .gui import launch_gui
+from . import web_api
 
 __all__ = [
     "BioSpeakEngine",
@@ -15,4 +16,5 @@ __all__ = [
     "generate_file_map",
     "IntegrationRegistry",
     "run_self_tests",
+    "web_api",
 ]
