@@ -55,7 +55,9 @@ release.
 Open `dist/index.html` in any modern browser. The app keeps everything client
 side—no server required.
 
-* **Toolbar verbs**: Reset, Load, Analyze, Translate, Align, Export.
+* **Dropdown menus**: Files (Load, Reset, Export), Sequence (Analyze, Translate,
+  Reverse Complement, GC %, Split, Merge, ORF Scan), Align (Pairwise Global,
+  Pairwise Local, Compare, Multiple Align).
 * **Drag-and-drop loader**: FASTA/FASTQ/GenBank/GFF/VCF/BAM/CSV/TSV/JSON files
   are written into the in-browser filesystem and parsed by the Python engine.
 * **Sequence panel**: Rounded cards with checkboxes for selecting sequences.
@@ -78,12 +80,14 @@ Bio Speak retains the full natural-language command set:
   `load json file PATH as NAME`.
 * **Sequencing verbs**: `count gc of NAME`, `count bases of NAME`, `count
   codons of NAME`, `find motif MOTIF in NAME`, `slice NAME from START to END as
-  NEW`, `join FIRST with SECOND as NEW`, `reverse complement NAME as NEW`,
-  `transcribe NAME as NEW`, `translate NAME as NEW`, `translate frames of NAME
-  as NEW`.
-* **Alignment**: `align FIRST with SECOND as NAME using global|local`, `align
-  group NAME1 NAME2 ... as NAME using mafft|clustal` (delegates to the
-  integration registry when tools are available).
+  NEW`, `split NAME every LENGTH as BASE`, `join FIRST with SECOND as NEW`,
+  `reverse complement NAME as NEW`, `transcribe NAME as NEW`, `translate NAME
+  as NEW`, `translate frames of NAME as NEW`, `scan orf of NAME minimum LENGTH
+  as BASE`.
+* **Alignment**: `align FIRST with SECOND as NAME using global|local`,
+  `compare FIRST with SECOND`, `align group NAME1 NAME2 ... as NAME using
+  mafft|clustal` (delegates to the integration registry when tools are
+  available).
 * **Reporting**: `make report for NAME as REPORT`, `write report of NAME to
   file PATH`, `export sequences to PATH`, `export table TABLE to PATH`.
 * **Inventory**: `list data`, `list sequences`, `list tables`, `show NAME`,

@@ -1,6 +1,7 @@
 """Sequence operations for BioSpeak."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Dict, Iterable, List, Tuple
 
 DNA_COMPLEMENT = str.maketrans({"A": "T", "T": "A", "C": "G", "G": "C"})
@@ -119,3 +120,83 @@ def translate_frames(sequence: str) -> List[Tuple[int, str]]:
     for frame in range(3):
         frames.append((frame + 1, translate(seq, frame)))
     return frames
+
+
+def chunk_sequence(sequence: str, size: int) -> List[str]:
+    """Split a sequence into equally sized chunks."""
+    seq = clean_sequence(sequence)
+    if size <= 0:
+        raise ValueError("Chunk size must be positive.")
+    if not seq:
+        return []
+    return [seq[i : i + size] for i in range(0, len(seq), size)]
+
+
+def compare_sequences(first: str, second: str) -> Dict[str, float]:
+    """Return simple comparison metrics for two sequences."""
+    seq_a = clean_sequence(first)
+    seq_b = clean_sequence(second)
+    length_a = len(seq_a)
+    length_b = len(seq_b)
+    overlap = min(length_a, length_b)
+    matches = sum(1 for i in range(overlap) if seq_a[i] == seq_b[i])
+    identity = (matches / overlap * 100) if overlap else 0.0
+    return {
+        "length_a": float(length_a),
+        "length_b": float(length_b),
+        "overlap": float(overlap),
+        "matches": float(matches),
+        "identity": identity,
+        "gaps": float(abs(length_a - length_b)),
+    }
+
+
+@dataclass
+class OrfResult:
+    """Details about a detected open reading frame."""
+
+    start: int
+    end: int
+    frame: int
+    length_bp: int
+    length_aa: int
+    protein: str
+
+
+def scan_orfs(sequence: str, min_aa_length: int = 30) -> List[OrfResult]:
+    """Scan a sequence for open reading frames."""
+
+    seq = clean_sequence(sequence)
+    results: List[OrfResult] = []
+    if min_aa_length <= 0:
+        min_aa_length = 1
+    stop_codons = {"TAA", "TAG", "TGA"}
+    seq_length = len(seq)
+    for frame in range(3):
+        i = frame
+        while i <= seq_length - 3:
+            codon = seq[i : i + 3]
+            if codon == "ATG":
+                j = i + 3
+                while j <= seq_length - 3:
+                    stop = seq[j : j + 3]
+                    if stop in stop_codons:
+                        aa_length = (j + 3 - i) // 3
+                        if aa_length >= min_aa_length:
+                            protein = translate(seq[i:j])
+                            results.append(
+                                OrfResult(
+                                    start=i + 1,
+                                    end=j + 3,
+                                    frame=frame + 1,
+                                    length_bp=(j + 3) - i,
+                                    length_aa=aa_length,
+                                    protein=protein,
+                                )
+                            )
+                        break
+                    j += 3
+                i = j
+            else:
+                i += 3
+    return results

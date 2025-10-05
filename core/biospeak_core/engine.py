@@ -36,6 +36,9 @@ from .sequence_ops import (
     transcribe,
     translate,
     translate_frames,
+    chunk_sequence,
+    compare_sequences,
+    scan_orfs,
 )
 from .workspace import Workspace
 
@@ -122,6 +125,8 @@ class BioSpeakEngine:
             return self._slice_sequence(command)
         if command_lower.startswith("join "):
             return self._join_sequences(command)
+        if command_lower.startswith("split "):
+            return self._split_sequence(command)
         if command_lower.startswith("transcribe "):
             return self._transcribe_sequence(command)
         if command_lower.startswith("translate frames of "):
@@ -134,6 +139,10 @@ class BioSpeakEngine:
             return self._reverse_sequence(command)
         if command_lower.startswith("complement "):
             return self._complement_sequence(command)
+        if command_lower.startswith("compare "):
+            return self._compare_sequences(command)
+        if command_lower.startswith("scan orf "):
+            return self._scan_orf(command)
         if command_lower.startswith("align "):
             return self._align_sequences(command)
         if command_lower.startswith("write report of "):
@@ -446,6 +455,53 @@ class BioSpeakEngine:
         )
         return CommandResult(f"Stored join as {new_name}.", [new_name])
 
+    def _split_sequence(self, command: str) -> CommandResult:
+        lower = command.lower()
+        if " every " not in lower or " as " not in lower:
+            raise CommandError("Please say: split NAME every LENGTH as BASE.")
+        after_split = command[len("split ") :]
+        name, rest = self._split_word(after_split, " every ")
+        size_text, base_name = self._split_word(rest, " as ")
+        try:
+            chunk_size = int(size_text.strip())
+        except ValueError as error:
+            raise CommandError("Please provide a whole number for the chunk length.") from error
+        if chunk_size <= 0:
+            raise CommandError("Chunk length must be greater than zero.")
+        item = self._require_sequence(name)
+        pieces = chunk_sequence(item.sequence, chunk_size)
+        if not pieces:
+            raise CommandError("Sequence is empty after cleaning.")
+        created: List[str] = []
+        rows: List[List[str]] = []
+        start = 1
+        for index, piece in enumerate(pieces, start=1):
+            new_name = f"{base_name}_{index}"
+            end = start + len(piece) - 1
+            self.workspace.add_sequence(
+                new_name,
+                piece,
+                alphabet=item.alphabet,
+                description=f"Split from {name} positions {start}-{end}",
+            )
+            created.append(new_name)
+            rows.append([new_name, str(start), str(end), str(len(piece))])
+            start = end + 1
+        summary_name = f"{base_name}_summary"
+        self.workspace.add_table(
+            summary_name,
+            ["name", "start", "end", "length"],
+            rows,
+            description=f"Split of {name}",
+        )
+        created.append(summary_name)
+        count = len(pieces)
+        label = "piece" if count == 1 else "pieces"
+        return CommandResult(
+            f"Split {name} into {count} {label} saved as {', '.join(created[:-1])}.",
+            created,
+        )
+
     def _transcribe_sequence(self, command: str) -> CommandResult:
         after = command[len("transcribe ") :]
         name, new_name = self._split_as(after)
@@ -530,6 +586,85 @@ class BioSpeakEngine:
             alphabet=item.alphabet,
         )
         return CommandResult(f"Stored reverse complement as {new_name}.", [new_name])
+
+    def _compare_sequences(self, command: str) -> CommandResult:
+        if " with " not in command.lower():
+            raise CommandError("Please say: compare FIRST with SECOND.")
+        after = command[len("compare ") :]
+        first, second = self._split_word(after, " with ")
+        item_a = self._require_sequence(first)
+        item_b = self._require_sequence(second)
+        metrics = compare_sequences(item_a.sequence, item_b.sequence)
+        lines = [
+            f"Compare {first} with {second}",
+            f"{first}: {int(metrics['length_a'])} bases",
+            f"{second}: {int(metrics['length_b'])} bases",
+            f"Shared length: {int(metrics['overlap'])} bases",
+            f"Matches: {int(metrics['matches'])}",
+            f"Identity: {metrics['identity']:.2f}%",
+        ]
+        gap = int(metrics["gaps"])
+        if gap:
+            unit = "base" if gap == 1 else "bases"
+            lines.append(f"Length gap: {gap} {unit}")
+        return CommandResult("\n".join(lines), [])
+
+    def _scan_orf(self, command: str) -> CommandResult:
+        lower = command.lower()
+        if not lower.startswith("scan orf "):
+            raise CommandError("Please say: scan orf of NAME as BASE.")
+        after = command[len("scan orf of ") :]
+        min_length = 30
+        if " minimum " in after.lower():
+            name, rest = self._split_word(after, " minimum ")
+            length_text, rest = self._split_word(rest, " as ")
+            try:
+                min_length = int(length_text.strip())
+            except ValueError as error:
+                raise CommandError("Please give a whole number for the minimum length.") from error
+            base_name = rest.strip()
+        else:
+            name, base_name = self._split_as(after)
+        item = self._require_sequence(name)
+        orfs = scan_orfs(item.sequence, min_aa_length=min_length)
+        if not orfs:
+            raise CommandError("No open reading frames found with that minimum length.")
+        created: List[str] = []
+        table_rows: List[List[str]] = []
+        for index, orf in enumerate(orfs, start=1):
+            new_name = f"{base_name}_{index}"
+            dna = item.sequence[orf.start - 1 : orf.end]
+            self.workspace.add_sequence(
+                new_name,
+                dna,
+                alphabet=item.alphabet,
+                description=f"ORF from {name} frame {orf.frame}",
+            )
+            created.append(new_name)
+            table_rows.append(
+                [
+                    new_name,
+                    str(orf.frame),
+                    str(orf.start),
+                    str(orf.end),
+                    str(orf.length_bp),
+                    str(orf.length_aa),
+                ]
+            )
+        table_name = f"{base_name}_orfs"
+        self.workspace.add_table(
+            table_name,
+            ["name", "frame", "start", "end", "length_bp", "length_aa"],
+            table_rows,
+            description=f"ORFs from {name}",
+        )
+        created.append(table_name)
+        count = len(orfs)
+        label = "frame" if count == 1 else "frames"
+        return CommandResult(
+            f"Found {count} open reading {label} saved as {', '.join(created[:-1])}.",
+            created,
+        )
 
     def _align_sequences(self, command: str) -> CommandResult:
         lower = command.lower()

@@ -9,16 +9,42 @@
   <body>
     <div id="app" class="app-shell">
       <header class="toolbar">
-        <div class="brand">Bio Speak Studio</div>
-        <div class="toolbar-buttons">
-          <button type="button" @click="resetWorkspace">Reset</button>
-          <button type="button" @click="triggerFileDialog">Load</button>
-          <button type="button" @click="analyzeSelected">Analyze</button>
-          <button type="button" @click="translateSelected">Translate</button>
-          <button type="button" @click="alignSelected">Align</button>
-          <button type="button" @click="exportWorkspace">Export</button>
-          <input ref="fileInput" class="hidden" type="file" multiple @change="handleFileInput" />
+        <div class="brand-block">
+          <div class="brand">Bio Speak Studio</div>
+          <div class="tagline">Browser Edition</div>
         </div>
+        <nav class="menu-bar">
+          <div class="menu" :class="{ open: state.openMenu === 'files' }" @mouseleave="closeMenus">
+            <button type="button" @click.stop="toggleMenu('files')">Files</button>
+            <div class="menu-panel" v-if="state.openMenu === 'files'">
+              <button type="button" @click="triggerFileDialog">Load from device</button>
+              <button type="button" @click="resetWorkspace">Reset workspace</button>
+              <button type="button" @click="exportWorkspace">Export workspace</button>
+            </div>
+          </div>
+          <div class="menu" :class="{ open: state.openMenu === 'sequence' }" @mouseleave="closeMenus">
+            <button type="button" @click.stop="toggleMenu('sequence')">Sequence</button>
+            <div class="menu-panel" v-if="state.openMenu === 'sequence'">
+              <button type="button" @click="analyzeSelected">Analyze selection</button>
+              <button type="button" @click="translateSelected">Translate</button>
+              <button type="button" @click="reverseComplementSelected">Reverse complement</button>
+              <button type="button" @click="gcSelected">GC content</button>
+              <button type="button" @click="splitSelected">Split</button>
+              <button type="button" @click="mergeSelected">Merge</button>
+              <button type="button" @click="scanOrfSelected">ORF scan</button>
+            </div>
+          </div>
+          <div class="menu" :class="{ open: state.openMenu === 'align' }" @mouseleave="closeMenus">
+            <button type="button" @click.stop="toggleMenu('align')">Align</button>
+            <div class="menu-panel" v-if="state.openMenu === 'align'">
+              <button type="button" @click="alignSelected('global')">Pairwise global</button>
+              <button type="button" @click="alignSelected('local')">Pairwise local</button>
+              <button type="button" @click="compareSelected">Compare</button>
+              <button type="button" @click="alignGroupSelected">Multiple align</button>
+            </div>
+          </div>
+        </nav>
+        <input ref="fileInput" class="hidden" type="file" multiple @change="handleFileInput" />
       </header>
       <main class="content">
         <aside class="side-panel">

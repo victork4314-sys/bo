@@ -1,4 +1,4 @@
-const { createApp, reactive, ref, onMounted } = Vue;
+const { createApp, reactive, ref, onMounted, onBeforeUnmount } = Vue;
 
 createApp({
   setup() {
@@ -12,6 +12,7 @@ createApp({
       log: [],
       preview: null,
       charts: { gc: false, lengths: false },
+      openMenu: null,
     });
 
     const fileInput = ref(null);
@@ -52,6 +53,20 @@ createApp({
       });
       if (state.log.length > 200) {
         state.log.splice(200);
+      }
+    }
+
+    function toggleMenu(name) {
+      state.openMenu = state.openMenu === name ? null : name;
+    }
+
+    function closeMenus() {
+      state.openMenu = null;
+    }
+
+    function handleDocumentClick(event) {
+      if (!event.target.closest || !event.target.closest(".menu")) {
+        closeMenus();
       }
     }
 
@@ -265,6 +280,7 @@ createApp({
     }
 
     function triggerFileDialog() {
+      closeMenus();
       if (fileInput.value) {
         fileInput.value.click();
       }
@@ -274,6 +290,7 @@ createApp({
       if (!resetFn) {
         return;
       }
+      closeMenus();
       const proxy = resetFn();
       const data = proxy.toJs(toJsOptions);
       proxy.destroy();
@@ -284,6 +301,7 @@ createApp({
     }
 
     async function analyzeSelected() {
+      closeMenus();
       if (!state.selectedSequences.length) {
         pushLog("error", "Select one or more sequences to analyze.");
         return;
@@ -305,6 +323,7 @@ createApp({
     }
 
     async function translateSelected() {
+      closeMenus();
       if (!state.selectedSequences.length) {
         pushLog("error", "Select sequences to translate.");
         return;
@@ -314,7 +333,7 @@ createApp({
         const translated = `${name}_protein`;
         const result = await runCommand(`translate ${name} as ${translated}`);
         if (result && result.status === "ok") {
-          outputs.push(`${name} → ${translated}`);
+          outputs.push(`${name} became ${translated}`);
         }
       }
       if (outputs.length) {
@@ -322,18 +341,44 @@ createApp({
       }
     }
 
-    async function alignSelected() {
+    async function alignSelected(method = "global") {
+      closeMenus();
       if (state.selectedSequences.length < 2) {
         pushLog("error", "Pick two sequences to align.");
         return;
       }
       const [first, second] = state.selectedSequences;
       const alignmentName = `${first}_${second}_align`;
-      const result = await runCommand(`align ${first} with ${second} as ${alignmentName} using global`);
+      const result = await runCommand(
+        `align ${first} with ${second} as ${alignmentName} using ${method}`
+      );
       if (result && result.status === "ok") {
         const alignment = (result.workspace.alignments || []).find((item) => item.name === alignmentName);
         const text = alignment ? alignment.lines.join("\n") : result.message;
         state.preview = { title: `Alignment — ${alignmentName}`, content: text };
+      }
+    }
+
+    async function alignGroupSelected() {
+      closeMenus();
+      if (state.selectedSequences.length < 3) {
+        pushLog("error", "Pick three or more sequences for group alignment.");
+        return;
+      }
+      const baseName = window.prompt("Name for the group alignment", "group_align");
+      if (!baseName) {
+        return;
+      }
+      const members = state.selectedSequences.join(" ");
+      const result = await runCommand(`align group ${members} as ${baseName}`);
+      if (result && result.status === "ok") {
+        const alignment = (result.workspace.alignments || []).find((item) => item.name === baseName);
+        if (alignment) {
+          state.preview = {
+            title: `Alignment — ${alignment.name}`,
+            content: `${alignment.lines.join("\n")}\nScore: ${alignment.score}`,
+          };
+        }
       }
     }
 
@@ -345,6 +390,7 @@ createApp({
     }
 
     function exportWorkspace() {
+      closeMenus();
       const payload = {
         generated_at: new Date().toISOString(),
         sequences: state.sequences,
@@ -364,7 +410,134 @@ createApp({
       pushLog("ok", "Exported workspace snapshot.");
     }
 
+    async function reverseComplementSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Select sequences first.");
+        return;
+      }
+      const outputs = [];
+      for (const name of state.selectedSequences) {
+        const target = `${name}_rc`;
+        const result = await runCommand(`reverse complement ${name} as ${target}`);
+        if (result && result.status === "ok") {
+          outputs.push(`${name} became ${target}`);
+        }
+      }
+      if (outputs.length) {
+        state.preview = { title: "Reverse Complement", content: outputs.join("\n") };
+      }
+    }
+
+    async function gcSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Select sequences to measure GC.");
+        return;
+      }
+      const lines = [];
+      for (const name of state.selectedSequences) {
+        const result = await runCommand(`count gc of ${name}`);
+        if (result && result.status === "ok") {
+          lines.push(result.message);
+        }
+      }
+      if (lines.length) {
+        state.preview = { title: "GC Content", content: lines.join("\n") };
+      }
+    }
+
+    async function splitSelected() {
+      closeMenus();
+      if (state.selectedSequences.length !== 1) {
+        pushLog("error", "Pick one sequence to split.");
+        return;
+      }
+      const [name] = state.selectedSequences;
+      const sizeText = window.prompt("Split length in bases", "500");
+      if (!sizeText) {
+        return;
+      }
+      const baseName = window.prompt("Name for the new pieces", `${name}_part`);
+      if (!baseName) {
+        return;
+      }
+      const size = Number.parseInt(sizeText, 10);
+      if (!Number.isFinite(size) || size <= 0) {
+        pushLog("error", "Use a positive whole number for the split length.");
+        return;
+      }
+      await runCommand(`split ${name} every ${size} as ${baseName}`);
+    }
+
+    async function mergeSelected() {
+      closeMenus();
+      if (state.selectedSequences.length < 2) {
+        pushLog("error", "Pick two or more sequences to merge.");
+        return;
+      }
+      const targetName = window.prompt("Name for the merged sequence", "merged_sequence");
+      if (!targetName) {
+        return;
+      }
+      let current = state.selectedSequences[0];
+      const created = [];
+      for (let i = 1; i < state.selectedSequences.length; i += 1) {
+        const next = state.selectedSequences[i];
+        const interim = i === state.selectedSequences.length - 1 ? targetName : `${targetName}_${i}`;
+        const result = await runCommand(`join ${current} with ${next} as ${interim}`);
+        if (!result || result.status !== "ok") {
+          return;
+        }
+        created.push(`${current} with ${next} made ${interim}`);
+        current = interim;
+      }
+      if (created.length) {
+        state.preview = { title: "Merge", content: created.join("\n") };
+      }
+    }
+
+    async function compareSelected() {
+      closeMenus();
+      if (state.selectedSequences.length !== 2) {
+        pushLog("error", "Pick two sequences to compare.");
+        return;
+      }
+      const [first, second] = state.selectedSequences;
+      const result = await runCommand(`compare ${first} with ${second}`);
+      if (result && result.status === "ok") {
+        state.preview = { title: "Compare", content: result.message };
+      }
+    }
+
+    async function scanOrfSelected() {
+      closeMenus();
+      if (state.selectedSequences.length !== 1) {
+        pushLog("error", "Pick one sequence to scan.");
+        return;
+      }
+      const [name] = state.selectedSequences;
+      const minText = window.prompt("Minimum protein length (aa)", "30");
+      if (!minText) {
+        return;
+      }
+      const baseName = window.prompt("Name for the ORF set", `${name}_orf`);
+      if (!baseName) {
+        return;
+      }
+      const min = Number.parseInt(minText, 10);
+      if (!Number.isFinite(min) || min <= 0) {
+        pushLog("error", "Use a positive whole number for the minimum length.");
+        return;
+      }
+      const result = await runCommand(`scan orf of ${name} minimum ${min} as ${baseName}`);
+      if (result && result.status === "ok") {
+        state.preview = { title: "ORF Scan", content: result.message };
+      }
+    }
+
     onMounted(async () => {
+      document.addEventListener("click", handleDocumentClick);
       pushLog("info", "Loading Bio Speak engine…");
       pyodide = await loadPyodide({ indexURL: "pyodide/" });
       pushLog("info", "Pyodide ready.");
@@ -381,8 +554,14 @@ createApp({
       pushLog("ok", "Bio Speak Studio ready.");
     });
 
+    onBeforeUnmount(() => {
+      document.removeEventListener("click", handleDocumentClick);
+    });
+
     return {
       state,
+      toggleMenu,
+      closeMenus,
       fileInput,
       triggerFileDialog,
       handleFileInput,
@@ -391,8 +570,15 @@ createApp({
       analyzeSelected,
       translateSelected,
       alignSelected,
+      alignGroupSelected,
       exportWorkspace,
       showAlignment,
+      reverseComplementSelected,
+      gcSelected,
+      splitSelected,
+      mergeSelected,
+      compareSelected,
+      scanOrfSelected,
     };
   },
 }).mount("#app");
