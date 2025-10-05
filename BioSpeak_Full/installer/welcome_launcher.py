@@ -31,10 +31,10 @@ def open_browser_version(base: Path, status: StringVar) -> None:
 
 def open_desktop_version(base: Path, status: StringVar) -> None:
     candidates = [
-        base / "desktop" / "BioSpeakStudio.exe",
-        base / "desktop" / "BioSpeakStudio.AppImage",
-        base / "desktop" / "BioSpeakStudio",
-        base / "desktop" / "BioSpeakStudio.app" / "Contents" / "MacOS" / "BioSpeakStudio",
+        base / "desktop" / "BioSpeak.exe",
+        base / "desktop" / "BioSpeak.AppImage",
+        base / "desktop" / "BioSpeak",
+        base / "desktop" / "BioSpeak.app" / "Contents" / "MacOS" / "BioSpeak",
     ]
     target = _candidate_paths(candidates)
     if target is None:

@@ -33,7 +33,7 @@ jobs:
         shell: powershell
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt || echo "requirements.txt not found"
+          python -m pip install -r BioSpeak_Full\requirements.txt || echo "requirements.txt not found"
           python -m pip install pyinstaller pyqt6 requests biopython scikit-bio pysam pandas numpy matplotlib plotly seaborn scikit-learn tensorflow
 
       - name: Install NSIS
@@ -42,13 +42,14 @@ jobs:
 
       - name: Build Windows installer
         shell: cmd
+        working-directory: BioSpeak_Full
         run: build_installer.bat
 
-      - name: Upload Windows artifact
+      - name: Upload Windows binary
         uses: actions/upload-artifact@v3
         with:
-          name: windows-installer
-          path: dist/BioSpeakInstaller.exe
+          name: windows-binary
+          path: BioSpeak_Full/dist/BioSpeak.exe
 
   build_macos:
     name: Build macOS Disk Image
@@ -65,19 +66,20 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -r BioSpeak_Full/requirements.txt
           python -m pip install pyinstaller pyqt6 requests biopython scikit-bio pysam pandas numpy matplotlib plotly seaborn scikit-learn tensorflow
 
       - name: Install create-dmg
         run: brew install create-dmg
 
       - name: Build macOS installer
-        run: ./build_installer.sh
+        run: ./BioSpeak_Full/build_installer.sh
 
-      - name: Upload macOS artifact
+      - name: Upload macOS app
         uses: actions/upload-artifact@v3
         with:
-          name: macos-installer
-          path: dist/BioSpeakInstaller.dmg
+          name: mac-binary
+          path: BioSpeak_Full/dist/BioSpeak.app
 
   build_linux:
     name: Build Linux AppImage and Web Bundle
@@ -94,6 +96,7 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -r BioSpeak_Full/requirements.txt
           python -m pip install pyinstaller requests biopython scikit-bio pysam pandas numpy matplotlib plotly seaborn scikit-learn tensorflow
 
       - name: Install AppImage tooling
@@ -106,23 +109,23 @@ jobs:
 
       - name: Build offline web bundle
         run: |
-          ./build_web.sh
-          mv dist web_dist
+          ./BioSpeak_Full/build_web.sh
+          mv BioSpeak_Full/dist BioSpeak_Full/web_dist
 
       - name: Build Linux installer
-        run: ./build_installer.sh
+        run: ./BioSpeak_Full/build_installer.sh
 
-      - name: Upload Linux artifact
+      - name: Upload Linux AppImage
         uses: actions/upload-artifact@v3
         with:
-          name: linux-installer
-          path: dist/BioSpeakInstaller.AppImage
+          name: linux-binary
+          path: BioSpeak_Full/dist/BioSpeak.AppImage
 
       - name: Upload web bundle
         uses: actions/upload-artifact@v3
         with:
           name: web-bundle
-          path: web_dist
+          path: BioSpeak_Full/web_dist
 
   package_release:
     name: Package Cross-Platform Release
@@ -135,22 +138,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download Windows artifact
+      - name: Download Windows binary
         uses: actions/download-artifact@v3
         with:
-          name: windows-installer
+          name: windows-binary
           path: artifacts/windows
 
-      - name: Download macOS artifact
+      - name: Download macOS app
         uses: actions/download-artifact@v3
         with:
-          name: macos-installer
+          name: mac-binary
           path: artifacts/macos
 
-      - name: Download Linux artifact
+      - name: Download Linux AppImage
         uses: actions/download-artifact@v3
         with:
-          name: linux-installer
+          name: linux-binary
           path: artifacts/linux
 
       - name: Download web bundle

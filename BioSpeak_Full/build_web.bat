@@ -11,14 +11,14 @@ set "PYODIDE_URL=https://github.com/pyodide/pyodide/releases/download/%PYODIDE_V
 if exist "%DIST%" rd /s /q "%DIST%"
 mkdir "%DIST%"
 
-python -m compileall core >nul
+python -m compileall biospeak_core >nul
 
 python - <<PY
 import json
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path('core').resolve()))
+sys.path.append(str(Path('.').resolve()))
 from biospeak_core.filemap import generate_file_map
 
 output = Path('dist/file-map.json')
@@ -26,7 +26,7 @@ output.write_text(json.dumps(generate_file_map(Path('.')), indent=2), encoding='
 PY
 
 xcopy web "%DIST%" /E /I /Y >nul
-xcopy core "%DIST%\core" /E /I /Y >nul
+xcopy biospeak_core "%DIST%\biospeak_core" /E /I /Y >nul
 
 if not exist "%PYODIDE_ZIP%" (
   powershell -Command "Invoke-WebRequest -UseBasicParsing -Uri '%PYODIDE_URL%' -OutFile '%PYODIDE_ZIP%'"

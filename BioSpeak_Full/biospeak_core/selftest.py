@@ -4,20 +4,27 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import List
 
+ROOT = Path(__file__).resolve().parents[1]
 
 COMMANDS = [
     [
         sys.executable,
         "-m",
         "compileall",
-        "core",
-        "cli",
-        "gui",
-        "installer",
+        str(ROOT / "biospeak_core"),
+        str(ROOT / "cli"),
+        str(ROOT / "gui"),
+        str(ROOT / "installer"),
     ],
-    [sys.executable, "cli/biospeak_cli.py", "run", "examples/demo.bio"],
+    [
+        sys.executable,
+        str(ROOT / "cli" / "biospeak_cli.py"),
+        "run",
+        str(ROOT / "examples" / "demo.bio"),
+    ],
 ]
 
 

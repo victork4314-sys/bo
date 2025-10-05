@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT_DIR"
 
-python -m compileall core cli gui
+python -m compileall biospeak_core cli gui
 python cli/biospeak_cli.py verify
 
 ./build_web.sh
@@ -17,19 +17,24 @@ if [[ "$OS_NAME" == "Darwin" ]]; then
   PAYLOAD="$BUILD_DIR/payload"
   rm -rf "$BUILD_DIR"
   mkdir -p "$BUILD_DIR/pyi" "$BUILD_DIR/build"
+  mkdir -p "$DIST_DIR"
 
   pyinstaller --noconfirm --clean --onefile cli/biospeak_cli.py --name biospeak --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build"
-  pyinstaller --noconfirm --clean gui/biospeak_studio.py --name BioSpeakStudio --windowed --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build" --add-data "core:core" --add-data "web:web"
+  pyinstaller --noconfirm --clean gui/biospeak_studio.py --name BioSpeak --windowed --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build" --add-data "biospeak_core:biospeak_core" --add-data "web:web"
   pyinstaller --noconfirm --clean installer/welcome_launcher.py --name BioSpeakWelcome --onefile --windowed --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build"
 
-  mkdir -p "$PAYLOAD"/{browser,desktop,terminal,launcher,core,examples}
+  mkdir -p "$PAYLOAD"/{browser,desktop,terminal,launcher,biospeak_core,examples}
   cp "$BUILD_DIR/pyi/biospeak" "$PAYLOAD/terminal/biospeak"
-  cp -R "$BUILD_DIR/pyi/BioSpeakStudio.app" "$PAYLOAD/desktop/"
+  cp -R "$BUILD_DIR/pyi/BioSpeak.app" "$PAYLOAD/desktop/"
   cp "$BUILD_DIR/pyi/BioSpeakWelcome" "$PAYLOAD/launcher/BioSpeakWelcome"
   cp -R dist/. "$PAYLOAD/browser"
-  cp -R core/. "$PAYLOAD/core"
+  cp -R biospeak_core/. "$PAYLOAD/biospeak_core"
   cp -R examples/. "$PAYLOAD/examples"
   cp README.md "$PAYLOAD"
+
+  rm -rf "$DIST_DIR/BioSpeak.app"
+  cp -R "$BUILD_DIR/pyi/BioSpeak.app" "$DIST_DIR/BioSpeak.app"
+  cp "$BUILD_DIR/pyi/biospeak" "$DIST_DIR/biospeak"
 
   pyinstaller --noconfirm --clean installer/setup_wizard.py --name BioSpeakInstaller --windowed --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build" --add-data "$PAYLOAD:payload"
 
@@ -59,17 +64,18 @@ if [[ "$OS_NAME" == "Linux" ]]; then
   PAYLOAD="$BUILD_DIR/payload"
   rm -rf "$BUILD_DIR"
   mkdir -p "$BUILD_DIR/pyi" "$BUILD_DIR/build"
+  mkdir -p "$DIST_DIR"
 
   pyinstaller --noconfirm --clean --onefile cli/biospeak_cli.py --name biospeak --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build"
-  pyinstaller --noconfirm --clean --onefile --windowed gui/biospeak_studio.py --name BioSpeakStudio --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build" --add-data "core:core" --add-data "web:web"
+  pyinstaller --noconfirm --clean --onefile --windowed gui/biospeak_studio.py --name BioSpeak --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build" --add-data "biospeak_core:biospeak_core" --add-data "web:web"
   pyinstaller --noconfirm --clean --onefile --windowed installer/welcome_launcher.py --name BioSpeakWelcome --distpath "$BUILD_DIR/pyi" --workpath "$BUILD_DIR/build"
 
-  mkdir -p "$PAYLOAD"/{browser,desktop,terminal,launcher,core,examples}
+  mkdir -p "$PAYLOAD"/{browser,desktop,terminal,launcher,biospeak_core,examples}
   cp "$BUILD_DIR/pyi/biospeak" "$PAYLOAD/terminal/biospeak"
-  cp "$BUILD_DIR/pyi/BioSpeakStudio" "$PAYLOAD/desktop/BioSpeakStudio"
+  cp "$BUILD_DIR/pyi/BioSpeak" "$PAYLOAD/desktop/BioSpeak"
   cp "$BUILD_DIR/pyi/BioSpeakWelcome" "$PAYLOAD/launcher/BioSpeakWelcome"
   cp -R dist/. "$PAYLOAD/browser"
-  cp -R core/. "$PAYLOAD/core"
+  cp -R biospeak_core/. "$PAYLOAD/biospeak_core"
   cp -R examples/. "$PAYLOAD/examples"
   cp README.md "$PAYLOAD"
 
@@ -85,9 +91,12 @@ if [[ "$OS_NAME" == "Linux" ]]; then
   cp installer/icons/biospeak.svg "$APPDIR/usr/share/icons/hicolor/scalable/apps/biospeak.svg"
 
   (cd "$APPDIR" && find . -name '*.pyc' -delete)
-  appimagetool "$APPDIR" "$DIST_DIR/BioSpeakInstaller.AppImage"
+  appimagetool "$APPDIR" "$DIST_DIR/BioSpeak.AppImage"
 
-  echo "Build complete -- Linux installer written to dist/BioSpeakInstaller.AppImage"
+  cp "$BUILD_DIR/pyi/BioSpeak" "$DIST_DIR/BioSpeak"
+  cp "$BUILD_DIR/pyi/biospeak" "$DIST_DIR/biospeak"
+
+  echo "Build complete -- Linux AppImage written to dist/BioSpeak.AppImage"
   exit 0
 fi
 

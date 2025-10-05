@@ -9,14 +9,14 @@ PYODIDE_URL="https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERS
 rm -rf "${DIST_DIR}"
 mkdir -p "${DIST_DIR}"
 
-python -m compileall core >/dev/null
+python -m compileall biospeak_core >/dev/null
 
 python <<'PY'
 import json
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path('core').resolve()))
+sys.path.append(str(Path('.').resolve()))
 from biospeak_core.filemap import generate_file_map
 
 output = Path('dist/file-map.json')
@@ -24,7 +24,7 @@ output.write_text(json.dumps(generate_file_map(Path('.')), indent=2), encoding='
 PY
 
 cp -R web/. "${DIST_DIR}/"
-cp -R core/. "${DIST_DIR}/core/"
+cp -R biospeak_core/. "${DIST_DIR}/biospeak_core/"
 
 mkdir -p "${DIST_DIR}/pyodide"
 if [ ! -f "${PYODIDE_ZIP}" ]; then

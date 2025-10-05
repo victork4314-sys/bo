@@ -6,9 +6,8 @@ from pathlib import Path
 from typing import List
 
 ROOT = Path(__file__).resolve().parents[1]
-CORE_PATH = ROOT / "core"
-if str(CORE_PATH) not in sys.path:
-    sys.path.insert(0, str(CORE_PATH))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 

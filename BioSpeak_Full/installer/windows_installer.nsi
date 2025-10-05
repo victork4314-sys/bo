@@ -33,7 +33,7 @@ Section "Install"
     WriteUninstaller "$INSTDIR\\Uninstall.exe"
 
     CreateDirectory "$SMPROGRAMS\\Bio Speak"
-    CreateShortCut "$SMPROGRAMS\\Bio Speak\\Bio Speak Studio.lnk" "$INSTDIR\\desktop\\BioSpeakStudio.exe"
+    CreateShortCut "$SMPROGRAMS\\Bio Speak\\Bio Speak Desktop.lnk" "$INSTDIR\\desktop\\BioSpeak.exe"
     CreateShortCut "$SMPROGRAMS\\Bio Speak\\Bio Speak Browser.lnk" "$INSTDIR\\browser\\index.html"
     CreateShortCut "$SMPROGRAMS\\Bio Speak\\Bio Speak Terminal.lnk" "$INSTDIR\\terminal\\biospeak.exe"
     CreateShortCut "$SMPROGRAMS\\Bio Speak\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"
@@ -45,7 +45,7 @@ SectionEnd
 
 Section "Uninstall"
     Delete "$DESKTOP\\Bio Speak.lnk"
-    Delete "$SMPROGRAMS\\Bio Speak\\Bio Speak Studio.lnk"
+    Delete "$SMPROGRAMS\\Bio Speak\\Bio Speak Desktop.lnk"
     Delete "$SMPROGRAMS\\Bio Speak\\Bio Speak Browser.lnk"
     Delete "$SMPROGRAMS\\Bio Speak\\Bio Speak Terminal.lnk"
     Delete "$SMPROGRAMS\\Bio Speak\\Uninstall.lnk"
