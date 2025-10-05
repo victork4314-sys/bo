@@ -20,4 +20,4 @@ if errorlevel 1 exit /b 1
 call build_gui.bat
 if errorlevel 1 exit /b 1
 
-echo BioLang setup complete. Executables are in the dist folder.
+echo BioSpeak setup complete. Executables are in the dist folder.

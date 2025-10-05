@@ -1,4 +1,4 @@
-"""Data models for BioLang."""
+"""Data models for BioSpeak."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 @dataclass
 class StoredItem:
-    """Represents any stored item in the BioLang workspace."""
+    """Represents any stored item in the BioSpeak workspace."""
 
     name: str
     kind: str

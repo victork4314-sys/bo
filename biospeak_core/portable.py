@@ -1,4 +1,4 @@
-"""Create ready-to-run BioLang bundles without admin rights."""
+"""Create ready-to-run BioSpeak bundles without admin rights."""
 from __future__ import annotations
 
 import os
@@ -21,7 +21,7 @@ def create_ready_bundle(target: Path) -> Path:
     """Create a portable folder with launch scripts.
 
     The folder can be carried to another computer without requiring
-    administrator permissions. It contains the BioLang sources, the CLI
+    administrator permissions. It contains the BioSpeak sources, the CLI
     runner, the GUI entry point, and Windows batch helpers.
     """
 
@@ -34,8 +34,8 @@ def create_ready_bundle(target: Path) -> Path:
     else:
         target.mkdir(parents=True)
 
-    # Copy the BioLang sources and helper assets
-    _copy_tree(project_root / "biolang_core", target / "biolang_core")
+    # Copy the BioSpeak sources and helper assets
+    _copy_tree(project_root / "biospeak_core", target / "biospeak_core")
     _copy_tree(project_root / "cli", target / "cli")
     _copy_tree(project_root / "gui", target / "gui")
     _copy_tree(project_root / "examples", target / "examples")
@@ -45,7 +45,7 @@ def create_ready_bundle(target: Path) -> Path:
         target / "README_PORTABLE.txt",
         dedent(
             """
-            BioLang Portable
+            BioSpeak Portable
             =================
 
             This folder is ready to run without administrator rights. Keep the
@@ -74,7 +74,7 @@ def create_ready_bundle(target: Path) -> Path:
             @echo off
             setlocal
             set SCRIPT_DIR=%~dp0
-            python "%SCRIPT_DIR%cli\\biolang_cli.py" %*
+            python "%SCRIPT_DIR%cli\\biospeak_cli.py" %*
             """
         ).lstrip(),
     )
@@ -86,7 +86,7 @@ def create_ready_bundle(target: Path) -> Path:
             @echo off
             setlocal
             set SCRIPT_DIR=%~dp0
-            python "%SCRIPT_DIR%gui\\biolang_studio.py"
+            python "%SCRIPT_DIR%gui\\biospeak_studio.py"
             """
         ).lstrip(),
     )

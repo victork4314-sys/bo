@@ -1,4 +1,4 @@
-"""BioLang Studio - graphical front end built with PyQt6."""
+"""BioSpeak Studio - graphical front end built with PyQt6."""
 from __future__ import annotations
 
 import tempfile
@@ -13,18 +13,18 @@ if str(ROOT) not in sys.path:
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from biolang_core import BioLangEngine, CommandError
-from biolang_core.data import AlignmentItem, SequenceItem, TableItem
+from biospeak_core import BioSpeakEngine, CommandError
+from biospeak_core.data import AlignmentItem, SequenceItem, TableItem
 
 
-class BioLangStudio(QtWidgets.QMainWindow):
-    """Apple-inspired desktop application for BioLang."""
+class BioSpeakStudio(QtWidgets.QMainWindow):
+    """Apple-inspired desktop application for BioSpeak."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.engine = BioLangEngine()
+        self.engine = BioSpeakEngine()
         self.registry = self.engine.registry
-        self.setWindowTitle("BioLang Studio")
+        self.setWindowTitle("BioSpeak Studio")
         self.resize(1280, 840)
         self._apply_palette()
         self._build_interface()
@@ -464,7 +464,7 @@ def main() -> None:
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    window = BioLangStudio()
+    window = BioSpeakStudio()
     window.show()
     sys.exit(app.exec())
 

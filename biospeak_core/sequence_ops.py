@@ -1,4 +1,4 @@
-"""Sequence operations for BioLang."""
+"""Sequence operations for BioSpeak."""
 from __future__ import annotations
 
 from typing import Dict, Iterable, List, Tuple

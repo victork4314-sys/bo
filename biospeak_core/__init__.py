@@ -1,6 +1,6 @@
-"""Shared core functionality for the BioLang platform."""
+"""Shared core functionality for the BioSpeak platform."""
 
-from .engine import BioLangEngine, CommandError
+from .engine import BioSpeakEngine, CommandError
 from .filemap import generate_file_map
 from .integration import IntegrationRegistry
 from .selftest import run_self_tests
@@ -8,7 +8,7 @@ from .workspace import Workspace
 from .gui import launch_gui
 
 __all__ = [
-    "BioLangEngine",
+    "BioSpeakEngine",
     "CommandError",
     "Workspace",
     "launch_gui",

@@ -1,4 +1,4 @@
-"""Self verification helpers for BioLang."""
+"""Self verification helpers for BioSpeak."""
 from __future__ import annotations
 
 import os
@@ -8,8 +8,8 @@ from typing import List
 
 
 COMMANDS = [
-    [sys.executable, "-m", "compileall", "biolang_core", "cli", "gui"],
-    [sys.executable, "cli/biolang_cli.py", "run", "examples/demo.bio"],
+    [sys.executable, "-m", "compileall", "biospeak_core", "cli", "gui"],
+    [sys.executable, "cli/biospeak_cli.py", "run", "examples/demo.bio"],
 ]
 
 

@@ -198,11 +198,9 @@ class IntegrationRegistry:
     def _pairwise_consistency_score(self, sequences: Sequence[str]) -> float:
         if len(sequences) < 2:
             return 0.0
-        pairs = 0
         total = 0.0
         for i in range(len(sequences)):
             for j in range(i + 1, len(sequences)):
-                total += gc_content(sequences[i] + sequences[j])
-                pairs += 1
-        return total / pairs if pairs else 0.0
-
+                total += needleman_wunsch(sequences[i], sequences[j]).score
+        pairs = len(sequences) * (len(sequences) - 1) / 2
+        return float(total / pairs)

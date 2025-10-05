@@ -1,4 +1,4 @@
-"""Command engine for the BioLang language."""
+"""Command engine for the BioSpeak language."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -50,8 +50,8 @@ class CommandResult:
     created_items: List[str]
 
 
-class BioLangEngine:
-    """Holds the data state and processes BioLang commands."""
+class BioSpeakEngine:
+    """Holds the data state and processes BioSpeak commands."""
 
     def __init__(self, workspace: Workspace | None = None, registry: IntegrationRegistry | None = None) -> None:
         self.workspace = workspace or Workspace()
