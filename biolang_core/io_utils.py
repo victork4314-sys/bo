@@ -1,4 +1,4 @@
-"""Input and output helpers for Bio Speak."""
+"""Input and output helpers for BioLang."""
 from __future__ import annotations
 
 import csv

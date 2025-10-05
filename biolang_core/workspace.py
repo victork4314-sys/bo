@@ -1,4 +1,4 @@
-"""Shared workspace management for Bio Speak."""
+"""Shared workspace management for BioLang."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field

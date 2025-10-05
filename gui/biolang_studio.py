@@ -1,4 +1,4 @@
-"""Bio Speak Studio - graphical front end built with PyQt6."""
+"""BioLang Studio - graphical front end built with PyQt6."""
 from __future__ import annotations
 
 import tempfile
@@ -13,18 +13,18 @@ if str(ROOT) not in sys.path:
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from biospeak_core import BioSpeakEngine, CommandError
-from biospeak_core.data import AlignmentItem, SequenceItem, TableItem
+from biolang_core import BioLangEngine, CommandError
+from biolang_core.data import AlignmentItem, SequenceItem, TableItem
 
 
-class BioSpeakStudio(QtWidgets.QMainWindow):
-    """Apple-inspired desktop application for Bio Speak."""
+class BioLangStudio(QtWidgets.QMainWindow):
+    """Apple-inspired desktop application for BioLang."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.engine = BioSpeakEngine()
+        self.engine = BioLangEngine()
         self.registry = self.engine.registry
-        self.setWindowTitle("Bio Speak Studio")
+        self.setWindowTitle("BioLang Studio")
         self.resize(1280, 840)
         self._apply_palette()
         self._build_interface()
@@ -272,7 +272,7 @@ class BioSpeakStudio(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.critical(self, "Align failed", str(error))
 
     def _export_sequences(self) -> None:
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Export sequences", str(Path.cwd() / "biospeak_sequences.fasta"), "FASTA (*.fasta)")
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Export sequences", str(Path.cwd() / "biolang_sequences.fasta"), "FASTA (*.fasta)")
         if not path:
             return
         try:
@@ -464,7 +464,7 @@ def main() -> None:
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    window = BioSpeakStudio()
+    window = BioLangStudio()
     window.show()
     sys.exit(app.exec())
 

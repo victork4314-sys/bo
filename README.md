@@ -1,26 +1,26 @@
-# Bio Speak Platform
+# BioLang Platform
 
-Bio Speak delivers a natural-language bioinformatics environment with a unified
+BioLang delivers a natural-language bioinformatics environment with a unified
 core and two coordinated front ends. Every workflow is driven by plain verbs so
 teams can operate complex analyses without learning code syntax.
 
 ## Architecture
 
 ```
-/biospeak_core   shared engine, integrations, workspace, and utilities
-/cli             terminal launcher that becomes biospeak.exe
-/gui             Bio Speak Studio PyQt6 application (Bio Speak Studio.exe)
+/biolang_core   shared engine, integrations, workspace, and utilities
+/cli             terminal launcher that becomes biolang.exe
+/gui             BioLang Studio PyQt6 application (BioLangStudio.exe)
 /examples        demo .bio scripts
 ```
 
-* **biospeak_core** hosts the command engine, workspace models, optional
+* **biolang_core** hosts the command engine, workspace models, optional
   third-party integrations (Biopython, scikit-bio, pysam, ete3, pandas,
   NumPy, matplotlib, plotly, seaborn, scikit-learn, TensorFlow), rich I/O for
   FASTA/FASTQ/GenBank/GFF/VCF/BAM/CSV/TSV/JSON, visual plotting helpers, and a
   self-test harness.
 * **CLI** exposes the engine as a REPL, script runner, verifier, portable bundle
   creator, and integration reporter.
-* **GUI** provides Bio Speak Studio with an Apple-inspired interface featuring
+* **GUI** provides BioLang Studio with an Apple-inspired interface featuring
   toolbar verbs, a file side panel, visual FASTA/FASTQ tools, color-coded
   alignments, and embedded charts backed by the same core functions as the CLI.
 
@@ -38,8 +38,8 @@ The script performs the following steps:
 2. Installs all required libraries (Biopython, scikit-bio, pysam, ete3, pandas,
    numpy, matplotlib, plotly, seaborn, scikit-learn, tensorflow, PyQt6,
    PyInstaller).
-3. Invokes `build_cli.bat` and `build_gui.bat` to produce `dist/biospeak.exe`
-   and `dist/Bio Speak Studio.exe`.
+3. Invokes `build_cli.bat` and `build_gui.bat` to produce `dist/biolang.exe`
+   and `dist/BioLangStudio.exe`.
 
 After installation the system is fully offline capable; both executables ship
 with all dependencies bundled by PyInstaller.
@@ -47,7 +47,7 @@ with all dependencies bundled by PyInstaller.
 ## Quick CLI Use
 
 ```
-python cli/biospeak_cli.py
+python cli/biolang_cli.py
 ```
 
 Speak commands in simple sentences:
@@ -63,32 +63,32 @@ exit
 ### Run a `.bio` Script
 
 ```
-python cli/biospeak_cli.py run examples/demo.bio
+python cli/biolang_cli.py run examples/demo.bio
 ```
 
 ### Create a No-Admin Portable Bundle
 
 ```
-python cli/biospeak_cli.py ready BioSpeakReady
+python cli/biolang_cli.py ready BioLangReady
 ```
 
-The target folder includes Windows launchers for both the CLI and Bio Speak
+The target folder includes Windows launchers for both the CLI and BioLang
 Studio, the examples, and documentation.
 
 ### Self Verification and File Map
 
 ```
-python cli/biospeak_cli.py verify      # compile, run demo script, confirm modules
-python cli/biospeak_cli.py filemap     # textual project inventory
-python cli/biospeak_cli.py integrations  # report third-party library status
+python cli/biolang_cli.py verify      # compile, run demo script, confirm modules
+python cli/biolang_cli.py filemap     # textual project inventory
+python cli/biolang_cli.py integrations  # report third-party library status
 ```
 
-## Bio Speak Studio (GUI)
+## BioLang Studio (GUI)
 
 Start the graphical studio with:
 
 ```
-python gui/biospeak_studio.py
+python gui/biolang_studio.py
 ```
 
 Features:
@@ -184,8 +184,8 @@ with your own values.
 
 Running `verify project` or the CLI `verify` command executes:
 
-1. `python -m compileall biospeak_core cli gui`
-2. `python cli/biospeak_cli.py run examples/demo.bio`
+1. `python -m compileall biolang_core cli gui`
+2. `python cli/biolang_cli.py run examples/demo.bio`
 
 Results are stored in the workspace as `verification_report`. The engine only
 states “All modules complete.” when every check passes.
@@ -207,15 +207,15 @@ build_cli.bat
 build_gui.bat
 ```
 
-`build_cli.bat` produces `dist/biospeak.exe` and `build_gui.bat` produces
-`dist/Bio Speak Studio.exe`, each bundling the shared `biospeak_core` package.
+`build_cli.bat` produces `dist/biolang.exe` and `build_gui.bat` produces
+`dist/BioLangStudio.exe`, each bundling the shared `biolang_core` package.
 
 ## File Map Summary
 
 Generate an always-current project inventory with either:
 
 ```
-python cli/biospeak_cli.py filemap
+python cli/biolang_cli.py filemap
 ```
 
 or the engine command `make file map` in the REPL. The output lists every file

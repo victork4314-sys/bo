@@ -1,8 +1,8 @@
 @echo off
 setlocal
 
-if exist "dist\\biospeak.exe" del "dist\\biospeak.exe"
-pyinstaller --clean --noconfirm --onefile --name biospeak --paths . --add-data "examples;examples" cli\biospeak_cli.py
+if exist "dist\\biolang.exe" del "dist\\biolang.exe"
+pyinstaller --clean --noconfirm --onefile --name biolang --paths . --add-data "examples;examples" cli\biolang_cli.py
 if errorlevel 1 (
     echo CLI build failed.
     exit /b 1

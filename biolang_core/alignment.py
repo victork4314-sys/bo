@@ -1,4 +1,4 @@
-"""Alignment routines for BioSpeak."""
+"""Alignment routines for BioLang."""
 from __future__ import annotations
 
 from dataclasses import dataclass
