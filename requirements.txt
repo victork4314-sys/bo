@@ -1,0 +1,13 @@
+biopython
+scikit-bio
+pysam
+ete3
+pandas
+numpy
+matplotlib
+plotly
+seaborn
+scikit-learn
+tensorflow
+PyQt6
+PyInstaller

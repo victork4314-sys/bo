@@ -66,6 +66,128 @@ variant for Windows), and `release.json` metadata ready to be zipped.
   report, and leave a `/dist` folder that can be zipped and opened offline in
   any standards-compliant browser.
 
+## Detailed Build & Compilation Instructions
+
+Every platform follows the same high-level flow: prepare a clean Python
+environment, install the shared dependencies, verify the toolchain, and then run
+the build scripts for the editions you need. The steps below assume
+Python 3.10 or newer is available on your `PATH`.
+
+### Common preparation
+
+1. Clone the repository and enter it:
+   ```bash
+   git clone https://github.com/your-org/BioSpeak_Release
+   cd BioSpeak_Release
+   ```
+2. Create and activate a virtual environment.
+   * **Windows (PowerShell)**
+     ```pwsh
+     py -3 -m venv .venv
+     .\.venv\Scripts\Activate.ps1
+     ```
+   * **macOS / Linux (bash or zsh)**
+     ```bash
+     python3 -m venv .venv
+     source .venv/bin/activate
+     ```
+3. Install the shared Python requirements:
+   ```bash
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   ```
+   The requirements file lists PyQt6, BioPython, scikit-bio, pandas, numpy,
+   matplotlib, plotly, PyInstaller, and the other libraries referenced by
+   `biospeak_core` and the automation scripts. Optional extras such as
+   TensorFlow can be installed afterwards if you plan to exercise those
+   integrations.
+4. Run the built-in verification command to confirm the environment is healthy:
+   ```bash
+   python cli/biospeak_cli.py verify
+   ```
+
+With the environment configured, follow the platform-specific compilation
+instructions below.
+
+### Windows build
+
+1. Install the **Microsoft Visual C++ Build Tools** (part of the free “Build
+   Tools for Visual Studio”) so PyInstaller can compile binary dependencies.
+2. Build the offline web bundle:
+   ```cmd
+   build_web.bat
+   ```
+3. Create the PyInstaller executables and NSIS installer:
+   ```cmd
+   build_installer.bat
+   ```
+4. (Optional) Assemble the unified release bundle:
+   ```cmd
+   python release\create_release_bundle.py ^
+     --windows dist\BioSpeakInstaller.exe ^
+     --mac path\to\BioSpeakInstaller.dmg ^
+     --linux path\to\BioSpeakInstaller.AppImage ^
+     --web dist
+   ```
+5. The compiled outputs appear in `dist\` (`biospeak.exe`,
+   `BioSpeakStudio.exe`, the offline web directory, and `BioSpeakInstaller.exe`).
+
+### macOS build
+
+1. Install the **Xcode Command Line Tools** to provide the compilers required by
+   PyInstaller and create-dmg:
+   ```bash
+   xcode-select --install
+   ```
+2. Build the offline web bundle:
+   ```bash
+   ./build_web.sh
+   ```
+3. Generate the PyInstaller binaries and DMG installer:
+   ```bash
+   ./build_installer.sh
+   ```
+4. (Optional) Assemble the release directory:
+   ```bash
+   python release/create_release_bundle.py \
+     --windows path/to/BioSpeakInstaller.exe \
+     --mac dist/BioSpeakInstaller.dmg \
+     --linux path/to/BioSpeakInstaller.AppImage \
+     --web dist
+   ```
+5. `dist/` now holds `BioSpeakStudio.app`, the command-line launcher, the
+   offline web bundle, and `BioSpeakInstaller.dmg` for distribution.
+
+### Linux build
+
+1. Install the system packages PyInstaller and AppImage tooling rely on. On
+   Debian/Ubuntu:
+   ```bash
+   sudo apt-get update
+   sudo apt-get install build-essential python3-dev patchelf libfuse2
+   ```
+2. Build the offline web bundle:
+   ```bash
+   ./build_web.sh
+   ```
+3. Produce the PyInstaller binaries and AppImage installer:
+   ```bash
+   ./build_installer.sh
+   ```
+4. (Optional) Assemble the release directory:
+   ```bash
+   python release/create_release_bundle.py \
+     --windows path/to/BioSpeakInstaller.exe \
+     --mac path/to/BioSpeakInstaller.dmg \
+     --linux dist/BioSpeakInstaller.AppImage \
+     --web dist
+   ```
+5. `dist/` contains the CLI executable, the desktop application, the offline
+   web bundle, and `BioSpeakInstaller.AppImage`.
+
+These instructions mirror the automated GitHub Actions workflow so local builds
+match the release artifacts published by CI.
+
 ## Terminal and Desktop Editions
 
 The classic Bio Speak experience remains available without a browser.
