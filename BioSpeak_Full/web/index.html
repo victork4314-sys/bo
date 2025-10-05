@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bio Speak Studio – Browser Edition</title>
+    <link rel="stylesheet" href="biospeak.css" />
+  </head>
+  <body>
+    <div
+      id="app"
+      class="app-shell"
+      :class="{ ready: state.ready, 'panel-collapsed': !state.sidePanelOpen }"
+      :data-theme="state.theme"
+    >
+      <header class="top-bar">
+        <div class="top-bar__section">
+          <button
+            class="icon-button"
+            type="button"
+            aria-label="Toggle sequence panel"
+            @click="toggleSidePanel"
+          >
+            ☰
+          </button>
+          <h1 class="top-bar__title">Bio Speak Studio – Browser Edition</h1>
+        </div>
+        <nav class="top-bar__menus">
+          <div class="menu" :class="{ open: state.openMenu === 'settings' }" @mouseleave="closeMenus">
+            <button type="button" @click.stop="toggleMenu('settings')">Settings ▼</button>
+            <div class="menu-panel" v-if="state.openMenu === 'settings'">
+              <button type="button" @click="toggleTheme">Switch to {{ state.theme === 'light' ? 'dark' : 'light' }} mode</button>
+              <button type="button" @click="resetWorkspace">Reset workspace</button>
+              <button type="button" @click="exportWorkspace">Export workspace snapshot</button>
+              <button type="button" @click="refreshWorkspace">Refresh view</button>
+            </div>
+          </div>
+          <div class="menu" :class="{ open: state.openMenu === 'help' }" @mouseleave="closeMenus">
+            <button type="button" @click.stop="toggleMenu('help')">Help ▼</button>
+            <div class="menu-panel" v-if="state.openMenu === 'help'">
+              <button type="button" @click="openGuide">Quick start</button>
+              <button type="button" @click="openShortcuts">Command reference</button>
+              <button type="button" @click="openSupport">Support notes</button>
+            </div>
+          </div>
+          <div class="menu" :class="{ open: state.openMenu === 'about' }" @mouseleave="closeMenus">
+            <button type="button" @click.stop="toggleMenu('about')">About ▼</button>
+            <div class="menu-panel" v-if="state.openMenu === 'about'">
+              <div class="menu-panel__info">
+                <p><strong>Bio Speak Studio</strong></p>
+                <p>Browser Edition powered by Pyodide and biospeak_core.</p>
+                <p class="menu-panel__version">Session ready: {{ state.ready ? 'Yes' : 'Loading' }}</p>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main class="main-layout">
+        <aside
+          class="side-panel"
+          :class="{ collapsed: !state.sidePanelOpen }"
+        >
+          <section class="panel-group">
+            <header class="panel-heading">Sequences</header>
+            <div class="panel-body sequence-list" @dragover.prevent @drop.prevent="handleDrop">
+              <p v-if="state.sequences.length === 0" class="empty">Drop FASTA, FASTQ, or tables to begin.</p>
+              <label v-for="item in state.sequences" :key="item.name" class="sequence-item">
+                <input type="checkbox" :value="item.name" v-model="state.selectedSequences" />
+                <div class="sequence-info">
+                  <div class="sequence-name">{{ item.name }}</div>
+                  <div class="sequence-meta">{{ sequenceStats(item) }}</div>
+                </div>
+              </label>
+            </div>
+          </section>
+          <section class="panel-group">
+            <header class="panel-heading">Alignments</header>
+            <div class="panel-body alignment-list">
+              <p v-if="state.alignments.length === 0" class="empty">Alignments will appear here.</p>
+              <button
+                v-for="align in state.alignments"
+                :key="align.name"
+                type="button"
+                class="alignment-item"
+                @click="showAlignment(align)"
+              >
+                <span class="alignment-name">{{ align.name }}</span>
+                <span class="alignment-meta">{{ align.method }} · score {{ align.score.toFixed(2) }}</span>
+              </button>
+            </div>
+          </section>
+          <section class="panel-group">
+            <header class="panel-heading">Tables</header>
+            <div class="panel-body table-list">
+              <p v-if="state.tables.length === 0" class="empty">Tables load automatically from files.</p>
+              <div v-for="table in state.tables" :key="table.name" class="table-item">
+                <div class="table-name">{{ table.name }}</div>
+                <div class="table-meta">{{ table.rows.length }} rows · {{ table.columns.length }} columns</div>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="workspace">
+          <div class="tab-bar">
+            <button
+              type="button"
+              class="tab"
+              :class="{ active: state.activeTab === 'sequence' }"
+              @click="setTab('sequence')"
+            >
+              Sequence Tools
+            </button>
+            <button
+              type="button"
+              class="tab"
+              :class="{ active: state.activeTab === 'alignment' }"
+              @click="setTab('alignment')"
+            >
+              Alignment
+            </button>
+            <button
+              type="button"
+              class="tab"
+              :class="{ active: state.activeTab === 'results' }"
+              @click="setTab('results')"
+            >
+              Results
+            </button>
+          </div>
+
+          <div class="tab-panel" v-show="state.activeTab === 'sequence'">
+            <div class="action-toolbar">
+              <div class="action-group">
+                <button type="button" class="primary" @click="triggerFileDialog">Load Files</button>
+                <button type="button" class="secondary" @click="resetWorkspace">Clear</button>
+                <button type="button" class="secondary" @click="exportWorkspace">Export</button>
+              </div>
+              <div class="dropdown-group">
+                <div class="menu" :class="{ open: state.openMenu === 'sequence-actions' }" @mouseleave="closeMenus">
+                  <button type="button" @click.stop="toggleMenu('sequence-actions')">Sequence Actions ▼</button>
+                  <div class="menu-panel" v-if="state.openMenu === 'sequence-actions'">
+                    <button type="button" @click="analyzeSelected">Analyze</button>
+                    <button type="button" @click="transcribeSelected">Transcribe</button>
+                    <button type="button" @click="translateSelected">Translate</button>
+                    <button type="button" @click="translateFramesSelected">Translate frames</button>
+                    <button type="button" @click="reverseComplementSelected">Reverse complement</button>
+                    <button type="button" @click="reverseSelected">Reverse</button>
+                    <button type="button" @click="complementSelected">Complement</button>
+                    <button type="button" @click="gcSelected">GC content</button>
+                    <button type="button" @click="countCodonsSelected">Codon usage</button>
+                    <button type="button" @click="findMotifSelected">Find motif</button>
+                    <button type="button" @click="splitSelected">Split</button>
+                    <button type="button" @click="sliceSelected">Slice</button>
+                    <button type="button" @click="mergeSelected">Merge</button>
+                    <button type="button" @click="scanOrfSelected">ORF scan</button>
+                  </div>
+                </div>
+                <div class="menu" :class="{ open: state.openMenu === 'sequence-compare' }" @mouseleave="closeMenus">
+                  <button type="button" @click.stop="toggleMenu('sequence-compare')">Compare ▼</button>
+                  <div class="menu-panel" v-if="state.openMenu === 'sequence-compare'">
+                    <button type="button" @click="compareSelected">Pairwise compare</button>
+                    <button type="button" @click="alignSelected('global')">Global align</button>
+                    <button type="button" @click="alignSelected('local')">Local align</button>
+                    <button type="button" @click="alignGroupSelected">Multiple align</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <input ref="fileInput" class="hidden" type="file" multiple @change="handleFileInput" />
+
+            <div class="panel-grid">
+              <article class="card" v-if="state.panelContent.sequence">
+                <h2>{{ state.panelContent.sequence.title }}</h2>
+                <pre class="panel-text">{{ state.panelContent.sequence.content }}</pre>
+              </article>
+              <article class="card" v-if="state.charts.gc">
+                <h2>GC Content</h2>
+                <div id="gc-chart" class="chart"></div>
+              </article>
+              <article class="card" v-if="state.charts.lengths">
+                <h2>Length Distribution</h2>
+                <div id="length-chart" class="chart"></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="tab-panel" v-show="state.activeTab === 'alignment'">
+            <article class="card" v-if="state.panelContent.alignment">
+              <h2>{{ state.panelContent.alignment.title }}</h2>
+              <pre class="panel-text">{{ state.panelContent.alignment.content }}</pre>
+            </article>
+            <article class="card" v-else>
+              <h2>Alignment workspace</h2>
+              <p class="panel-copy">
+                Choose two or more sequences, then open the Compare menu to run pairwise or multiple
+                alignments. Selected outputs appear here for review and export.
+              </p>
+            </article>
+          </div>
+
+          <div class="tab-panel" v-show="state.activeTab === 'results'">
+            <article class="card">
+              <h2>Workspace Summary</h2>
+              <pre class="panel-text">{{ state.workspaceSummary }}</pre>
+            </article>
+            <article class="card" v-if="state.panelContent.results">
+              <h2>{{ state.panelContent.results.title }}</h2>
+              <pre class="panel-text">{{ state.panelContent.results.content }}</pre>
+            </article>
+            <figure class="layout-figure" aria-label="Interface alignment preview">
+              <div class="layout-figure__grid">
+                <div class="layout-figure__block"></div>
+                <div class="layout-figure__block"></div>
+                <div class="layout-figure__block"></div>
+              </div>
+              <figcaption>8 px rhythm confirmed across primary panels and controls.</figcaption>
+            </figure>
+          </div>
+        </section>
+      </main>
+
+      <footer class="activity-bar">
+        <div class="activity-status">
+          <span class="status-indicator" :class="{ active: state.progress.active }"></span>
+          <span class="activity-text">{{ state.progress.message }}</span>
+        </div>
+        <ul class="activity-log">
+          <li v-for="entry in recentLog" :key="entry.timestamp">
+            <span class="log-time">{{ entry.time }}</span>
+            <span :class="['log-status', entry.status]">{{ entry.status.toUpperCase() }}</span>
+            <span class="log-text">{{ entry.message }}</span>
+          </li>
+        </ul>
+      </footer>
+    </div>
+
+    <script src="pyodide/pyodide.js"></script>
+    <script src="vendor/vue.global.prod.js"></script>
+    <script src="vendor/plotly.min.js"></script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
