@@ -26,10 +26,17 @@
             <button type="button" @click.stop="toggleMenu('sequence')">Sequence</button>
             <div class="menu-panel" v-if="state.openMenu === 'sequence'">
               <button type="button" @click="analyzeSelected">Analyze selection</button>
+              <button type="button" @click="transcribeSelected">Transcribe to RNA</button>
               <button type="button" @click="translateSelected">Translate</button>
+              <button type="button" @click="translateFramesSelected">Translate frames</button>
               <button type="button" @click="reverseComplementSelected">Reverse complement</button>
+              <button type="button" @click="reverseSelected">Reverse sequence</button>
+              <button type="button" @click="complementSelected">Complement sequence</button>
               <button type="button" @click="gcSelected">GC content</button>
+              <button type="button" @click="countCodonsSelected">Codon usage</button>
+              <button type="button" @click="findMotifSelected">Find motif</button>
               <button type="button" @click="splitSelected">Split</button>
+              <button type="button" @click="sliceSelected">Slice region</button>
               <button type="button" @click="mergeSelected">Merge</button>
               <button type="button" @click="scanOrfSelected">ORF scan</button>
             </div>

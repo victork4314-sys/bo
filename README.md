@@ -55,9 +55,10 @@ release.
 Open `dist/index.html` in any modern browser. The app keeps everything client
 side—no server required.
 
-* **Dropdown menus**: Files (Load, Reset, Export), Sequence (Analyze, Translate,
-  Reverse Complement, GC %, Split, Merge, ORF Scan), Align (Pairwise Global,
-  Pairwise Local, Compare, Multiple Align).
+* **Dropdown menus**: Files (Load, Reset, Export), Sequence (Analyze, Transcribe
+  to RNA, Translate, Translate Frames, Reverse Complement, Reverse, Complement,
+  GC %, Codon Usage, Motif Search, Split, Slice, Merge, ORF Scan), Align
+  (Pairwise Global, Pairwise Local, Compare, Multiple Align).
 * **Drag-and-drop loader**: FASTA/FASTQ/GenBank/GFF/VCF/BAM/CSV/TSV/JSON files
   are written into the in-browser filesystem and parsed by the Python engine.
 * **Sequence panel**: Rounded cards with checkboxes for selecting sequences.

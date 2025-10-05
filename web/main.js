@@ -322,6 +322,24 @@ createApp({
       }
     }
 
+    async function countCodonsSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Pick one or more sequences first.");
+        return;
+      }
+      const lines = [];
+      for (const name of state.selectedSequences) {
+        const result = await runCommand(`count codons of ${name}`);
+        if (result && result.status === "ok") {
+          lines.push(`${name}\n${result.message}`);
+        }
+      }
+      if (lines.length) {
+        state.preview = { title: "Codon Usage", content: lines.join("\n\n") };
+      }
+    }
+
     async function translateSelected() {
       closeMenus();
       if (!state.selectedSequences.length) {
@@ -338,6 +356,25 @@ createApp({
       }
       if (outputs.length) {
         state.preview = { title: "Translation", content: outputs.join("\n") };
+      }
+    }
+
+    async function translateFramesSelected() {
+      closeMenus();
+      if (state.selectedSequences.length !== 1) {
+        pushLog("error", "Pick one sequence to explore frames.");
+        return;
+      }
+      const [name] = state.selectedSequences;
+      const reportName = window.prompt("Name for the frame report", `${name}_frames`);
+      if (!reportName) {
+        return;
+      }
+      const result = await runCommand(`translate frames of ${name} as ${reportName}`);
+      if (result && result.status === "ok") {
+        const report = (result.workspace.reports || []).find((entry) => entry.name === reportName);
+        const content = report ? report.lines.join("\n") : result.message;
+        state.preview = { title: "Reading Frames", content };
       }
     }
 
@@ -429,6 +466,63 @@ createApp({
       }
     }
 
+    async function reverseSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Select sequences first.");
+        return;
+      }
+      const outputs = [];
+      for (const name of state.selectedSequences) {
+        const target = `${name}_rev`;
+        const result = await runCommand(`reverse ${name} as ${target}`);
+        if (result && result.status === "ok") {
+          outputs.push(`${name} became ${target}`);
+        }
+      }
+      if (outputs.length) {
+        state.preview = { title: "Reverse", content: outputs.join("\n") };
+      }
+    }
+
+    async function complementSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Select sequences first.");
+        return;
+      }
+      const outputs = [];
+      for (const name of state.selectedSequences) {
+        const target = `${name}_comp`;
+        const result = await runCommand(`complement ${name} as ${target}`);
+        if (result && result.status === "ok") {
+          outputs.push(`${name} became ${target}`);
+        }
+      }
+      if (outputs.length) {
+        state.preview = { title: "Complement", content: outputs.join("\n") };
+      }
+    }
+
+    async function transcribeSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Select sequences first.");
+        return;
+      }
+      const outputs = [];
+      for (const name of state.selectedSequences) {
+        const target = `${name}_rna`;
+        const result = await runCommand(`transcribe ${name} as ${target}`);
+        if (result && result.status === "ok") {
+          outputs.push(`${name} became ${target}`);
+        }
+      }
+      if (outputs.length) {
+        state.preview = { title: "Transcription", content: outputs.join("\n") };
+      }
+    }
+
     async function gcSelected() {
       closeMenus();
       if (!state.selectedSequences.length) {
@@ -444,6 +538,28 @@ createApp({
       }
       if (lines.length) {
         state.preview = { title: "GC Content", content: lines.join("\n") };
+      }
+    }
+
+    async function findMotifSelected() {
+      closeMenus();
+      if (!state.selectedSequences.length) {
+        pushLog("error", "Pick one or more sequences first.");
+        return;
+      }
+      const motif = window.prompt("Motif to find (letters only)");
+      if (!motif) {
+        return;
+      }
+      const lines = [];
+      for (const name of state.selectedSequences) {
+        const result = await runCommand(`find motif ${motif} in ${name}`);
+        if (result && result.status === "ok") {
+          lines.push(`${name}: ${result.message}`);
+        }
+      }
+      if (lines.length) {
+        state.preview = { title: "Motif Search", content: lines.join("\n") };
       }
     }
 
@@ -468,6 +584,34 @@ createApp({
         return;
       }
       await runCommand(`split ${name} every ${size} as ${baseName}`);
+    }
+
+    async function sliceSelected() {
+      closeMenus();
+      if (state.selectedSequences.length !== 1) {
+        pushLog("error", "Pick one sequence to slice.");
+        return;
+      }
+      const [name] = state.selectedSequences;
+      const startText = window.prompt("Start position", "1");
+      if (!startText) {
+        return;
+      }
+      const endText = window.prompt("End position", "100");
+      if (!endText) {
+        return;
+      }
+      const newName = window.prompt("Name for the slice", `${name}_slice`);
+      if (!newName) {
+        return;
+      }
+      const start = Number.parseInt(startText, 10);
+      const end = Number.parseInt(endText, 10);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || start <= 0 || end <= 0 || end < start) {
+        pushLog("error", "Give valid start and end positions.");
+        return;
+      }
+      await runCommand(`slice ${name} from ${start} to ${end} as ${newName}`);
     }
 
     async function mergeSelected() {
@@ -568,14 +712,21 @@ createApp({
       handleDrop,
       resetWorkspace,
       analyzeSelected,
+      countCodonsSelected,
       translateSelected,
+      translateFramesSelected,
       alignSelected,
       alignGroupSelected,
       exportWorkspace,
       showAlignment,
       reverseComplementSelected,
+      reverseSelected,
+      complementSelected,
+      transcribeSelected,
       gcSelected,
+      findMotifSelected,
       splitSelected,
+      sliceSelected,
       mergeSelected,
       compareSelected,
       scanOrfSelected,
